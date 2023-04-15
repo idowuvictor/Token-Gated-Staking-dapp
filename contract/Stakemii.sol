@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
-interface IERC20{
+interface IERC20 {
     function transfer(address to, uint256 amount) external returns (bool);
     function balanceOf(address account) external view returns (uint256);
     function transferFrom(
@@ -10,21 +10,24 @@ interface IERC20{
         uint256 amount
     ) external returns (bool);
     function approve(address spender, uint256 amount) external returns (bool);
-
 }
 
-contract Stakemii{
-
+contract Stakemii {
+    // Constants for interest rate and calculation factor
     uint constant rate = 3854;
     uint256 constant factor = 1e11;
+
+    // Contract owner and stake number counter
     address owner;
     uint stakeNumber;
 
+    // Constants for token addresses
     address constant cUSDAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
     address constant CELOAddress = 0xF194afDf50B03e69Bd7D057c1Aa9e10c9954E4C9;
     address constant cEURAddress = 0x10c892A6EC43a53E45D0B916B4b7D383B1b78C0F;
     address constant cREALAddress = 0xC5375c73a627105eb4DF00867717F6e301966C32;
 
+    // Total amount staked for each token
     uint public cEURAddressTotalstaked;
     uint public cREALAddressTotalstaked;
     uint public CELOAddressTotalstaked;
@@ -34,8 +37,7 @@ contract Stakemii{
         owner = msg.sender;
     }
 
-
-    struct stakeInfo{
+    struct stakeInfo {
         address staker;
         address tokenStaked;
         uint amountStaked;
@@ -43,20 +45,23 @@ contract Stakemii{
         address[] tokenaddress;
     }
 
+    // Modifier to check if the provided address is not zero
     modifier addressCheck(address _tokenAddress){
         require(_tokenAddress != address(0), "Invalid Address");
         _;
     }
 
+    // Modifier to check if the provided token address is accepted
     modifier acceptedAddress(address _tokenAddress){
         require( _tokenAddress == cUSDAddress || _tokenAddress == CELOAddress || _tokenAddress == cEURAddress || _tokenAddress == cREALAddress, "TOKEN NOT ACCEPTED");
         _;
     }
+
+    // Modifier to check if the caller is the contract owner
     modifier onlyOwner(){
         require(msg.sender == owner, "not owner");
         _;
     }
-
 
     mapping(address => mapping(address => stakeInfo)) public usersStake;
     mapping(address => address[]) public tokensAddress;
@@ -64,11 +69,15 @@ contract Stakemii{
     event stakedSuccesful(address indexed _tokenaddress, uint indexed _amount);
     event withdrawsuccesfull(address indexed _tokenaddress, uint indexed _amount);
 
+    // Function to stake tokens
     function stake (address _tokenAddress, uint _amount) public addressCheck(_tokenAddress) acceptedAddress(_tokenAddress) {
+        // Check if user has enough cUSD balance to stake
         require(IERC20(cUSDAddress).balanceOf(msg.sender) > 2 ether, "User does not have a Celo Token balance that is more than 3");
+        // Check if user has enough balance of the token to be staked
         require(IERC20(_tokenAddress).balanceOf(msg.sender) > _amount, "insufficient balance");
+        // Transfer tokens from user to contract
         IERC20(_tokenAddress).transferFrom(msg.sender, address(this), _amount );
-        stakeInfo storage ST = usersStake[msg.sender][_tokenAddress];
+        stakeInfo storage ST = users
         if(ST.amountStaked > 0){
             uint interest = _interestGotten(_tokenAddress);
             ST.amountStaked += interest;
