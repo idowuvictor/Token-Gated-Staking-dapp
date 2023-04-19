@@ -34,6 +34,9 @@ contract Stakemii{
         owner = msg.sender;
     }
 
+    mapping(address => mapping(address => uint256)) private stakes;
+
+
 
     struct stakeInfo{
         address staker;
@@ -67,8 +70,19 @@ contract Stakemii{
     function stake (address _tokenAddress, uint _amount) public addressCheck(_tokenAddress) acceptedAddress(_tokenAddress) {
         require(IERC20(cUSDAddress).balanceOf(msg.sender) > 2 ether, "User does not have a Celo Token balance that is more than 3");
         require(IERC20(_tokenAddress).balanceOf(msg.sender) > _amount, "insufficient balance");
+        require(_amount > 0, "Amount should be greater than 0");
+        require(_tokenAddress != address(0), "Token address cannot be 0x0");
+
+
+         IERC20 token = IERC20(_tokenAddress);
+        uint256 balance = token.balanceOf(msg.sender);
+        require(balance >= _amount, "Insufficient balance");
+
+
         IERC20(_tokenAddress).transferFrom(msg.sender, address(this), _amount );
         stakeInfo storage ST = usersStake[msg.sender][_tokenAddress];
+
+
         if(ST.amountStaked > 0){
             uint interest = _interestGotten(_tokenAddress);
             ST.amountStaked += interest;
@@ -81,6 +95,8 @@ contract Stakemii{
 
         stakeNumber +=1;
 
+
+
         if(_tokenAddress == cEURAddress){
             cEURAddressTotalstaked += _amount;
         } else if(_tokenAddress == cUSDAddress){
@@ -91,6 +107,9 @@ contract Stakemii{
             cREALAddressTotalstaked += _amount;
         }
 
+         stakes[msg.sender][_tokenAddress] = _amount;
+
+
        emit stakedSuccesful(_tokenAddress, _amount);
     }
 
@@ -99,6 +118,9 @@ contract Stakemii{
         stakeInfo storage ST = usersStake[msg.sender][_tokenAddress];
         //require(ST.timeStaked > 0, "You have no staked token here");
         require(_amount <= ST.amountStaked , "insufficient balance");
+        require(_amount > 0, "Amount should be greater than 0");
+
+
         uint interest = _interestGotten(_tokenAddress);
         ST.amountStaked -= _amount;
         IERC20(_tokenAddress).transfer(msg.sender, _amount);
@@ -119,6 +141,8 @@ contract Stakemii{
         }
         return interest;
     }
+
+    
 
     function showInterest(address _tokenAddress) external view acceptedAddress(_tokenAddress) returns(uint){
         uint interest = _interestGotten(_tokenAddress);
