@@ -104,6 +104,7 @@ contract Stakemii{
         if(ST.amountStaked > 0){
             uint interest = _interestGotten(_tokenAddress);
             ST.amountStaked += interest;
+            ST.amountStaked += (ST.amountStaked * interest) / factor;
         }
         ST.staker = msg.sender;
         ST.amountStaked += _amount;
@@ -141,7 +142,7 @@ contract Stakemii{
         ST.amountStaked -= _amount;
         IERC20(_tokenAddress).transfer(msg.sender, _amount);
         IERC20(cUSDAddress).transfer(msg.sender, interest);
-
+        stakeNumber -=1;
         emit withdrawsuccesfull(_tokenAddress, _amount);
     }
 
