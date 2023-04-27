@@ -8,6 +8,11 @@ const ERC20_DECIMALS = 18;
 const StakemiiAddress = "0x00a3C172E6cc85e1681B6148E1a98b77057AFF7A";
 const cUSDContractAddress = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1";
 
+const ERC20_DECIMALS = 18
+const StakemiiAddress = "0xfe2a83644148D0aa3E8C5BFD75A823c1B11deB6E"
+const cUSDContractAddress = "0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1"
+
+
 let kit;
 let contract;
 let products = [];
@@ -199,7 +204,7 @@ document
 
 document.querySelector("#withdrawBTN").addEventListener("click", async (e) => {
   let addressOfToken =  document.getElementById("address").value;
-  let amountToWithdraw = new BigNumber(document.getElementById("amountToStake").value)
+  let amountToWithdraw = new BigNumber(document.getElementById("amountToWithdraw").value)
   .shiftedBy(ERC20_DECIMALS)
   .toString()
   console.log(addressOfToken, amountToWithdraw)
