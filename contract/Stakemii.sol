@@ -1,8 +1,12 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.9;
 
+
+interface IERC20 {
+
 //IERC20 Interface
 interface IERC20{
+
     function transfer(address to, uint256 amount) external returns (bool);
     function balanceOf(address account) external view returns (uint256);
     function transferFrom(
@@ -11,30 +15,45 @@ interface IERC20{
         uint256 amount
     ) external returns (bool);
     function approve(address spender, uint256 amount) external returns (bool);
-
 }
+
+
+contract Stakemii {
+    // Constants for interest rate and calculation factor
 
 contract Stakemii{
     
     //constant rate of return on the staked used to calculate interest
+
     uint constant rate = 3854;
 
      // Factor for interest calculation
     uint256 constant factor = 1e11;
 
+    // Contract owner and stake number counter
+
     //Adding owner address
+
     address owner;
 
     //Amount Staked
     uint stakeNumber;
 
+
+    // Constants for token addresses
+
      //Addresses for stakeable currencies
+
     address constant cUSDAddress = 0x874069Fa1Eb16D44d622F2e0Ca25eeA172369bC1;
     address constant CELOAddress = 0xF194afDf50B03e69Bd7D057c1Aa9e10c9954E4C9;
     address constant cEURAddress = 0x10c892A6EC43a53E45D0B916B4b7D383B1b78C0F;
     address constant cREALAddress = 0xC5375c73a627105eb4DF00867717F6e301966C32;
 
+
+    // Total amount staked for each token
+
     // Totals of each currency staked
+
     uint public cEURAddressTotalstaked;
     uint public cREALAddressTotalstaked;
     uint public CELOAddressTotalstaked;
@@ -45,6 +64,7 @@ contract Stakemii{
         owner = msg.sender;
     }
 
+    struct stakeInfo {
 
      /**
      * @notice  . Struct that stores staking info;
@@ -54,6 +74,7 @@ contract Stakemii{
      * @param   timeStaked  . Time of stake
      */
     struct stakeInfo{
+
         address staker;
         address tokenStaked;
         uint amountStaked;
@@ -61,25 +82,36 @@ contract Stakemii{
     }
 
 
+    // Modifier to check if the provided address is not zero
+
+
     //*******************Modifier******************** */
     // checks for address zero
+
     modifier addressCheck(address _tokenAddress){
         require(_tokenAddress != address(0), "Invalid Address");
         _;
     }
 
+
+    // Modifier to check if the provided token address is accepted
+
     //  checks that the user is staking the accepted token
+
     modifier acceptedAddress(address _tokenAddress){
         require( _tokenAddress == cUSDAddress || _tokenAddress == CELOAddress || _tokenAddress == cEURAddress || _tokenAddress == cREALAddress, "TOKEN NOT ACCEPTED");
         _;
     }
 
+
+    // Modifier to check if the caller is the contract owner
+
     // checks for ownwer/adamin
+
     modifier onlyOwner(){
         require(msg.sender == owner, "not owner");
         _;
     }
-
 
     mapping(address => mapping(address => stakeInfo)) public usersStake;
     mapping(address => address[]) public tokensAddress;
@@ -89,6 +121,10 @@ contract Stakemii{
     event withdrawsuccesfull(address indexed _tokenaddress, uint indexed _amount);
 
 
+    // Function to stake tokens
+    function stake (address _tokenAddress, uint _amount) public addressCheck(_tokenAddress) acceptedAddress(_tokenAddress) {
+        // Check if user has enough cUSD balance to stake
+
     /**
      * @notice  . Users are require to have balance of 2 cUSD
      * @dev     . A function to stake
@@ -97,10 +133,13 @@ contract Stakemii{
      */
     function stake (address _tokenAddress, uint _amount) public addressCheck(_tokenAddress) acceptedAddress(_tokenAddress) {
         require(_amount > 0, "Amount should be greater than 0");
+
         require(IERC20(cUSDAddress).balanceOf(msg.sender) > 2 ether, "User does not have a Celo Token balance that is more than 3");
+        // Check if user has enough balance of the token to be staked
         require(IERC20(_tokenAddress).balanceOf(msg.sender) > _amount, "insufficient balance");
+        // Transfer tokens from user to contract
         IERC20(_tokenAddress).transferFrom(msg.sender, address(this), _amount );
-        stakeInfo storage ST = usersStake[msg.sender][_tokenAddress];
+        stakeInfo storage ST = users
         if(ST.amountStaked > 0){
             uint interest = _interestGotten(_tokenAddress);
             ST.amountStaked += interest;
