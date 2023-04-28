@@ -23,7 +23,7 @@ contract Stakemii{
     uint256 constant factor = 1e11;
 
     //Adding owner address
-    address owner;
+    address private immutable i_owner;
 
     //Amount Staked
     uint stakeNumber;
@@ -42,7 +42,7 @@ contract Stakemii{
 
      /// @dev constructor Initializing Contract by setting the sender of the initial transaction as contract owner
     constructor(){
-        owner = msg.sender;
+        i_owner = msg.sender;
     }
 
 
@@ -76,7 +76,7 @@ contract Stakemii{
 
     // checks for ownwer/adamin
     modifier onlyOwner(){
-        require(msg.sender == owner, "not owner");
+        require(msg.sender == i_owner, "not owner");
         _;
     }
 
@@ -113,15 +113,10 @@ contract Stakemii{
 
         stakeNumber +=1;
 
-        if(_tokenAddress == cEURAddress){
-            cEURAddressTotalstaked += _amount;
-        } else if(_tokenAddress == cUSDAddress){
-           cUSDAddressTotalstaked += _amount;
-        } else if(_tokenAddress == CELOAddress){
-            CELOAddressTotalstaked += _amount;
-        }else{
-            cREALAddressTotalstaked += _amount;
-        }
+        _tokenAddress == cEURAddress ? cEURAddressTotalstaked += _amount :
+        (_tokenAddress == cUSDAddress ? cUSDAddressTotalstaked += _amount : 
+        (_tokenAddress == CELOAddress ? CELOAddressTotalstaked += _amount : 
+        cREALAddressTotalstaked += _amount));
 
        emit stakedSuccesful(_tokenAddress, _amount);
     }
